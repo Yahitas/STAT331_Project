@@ -1,12 +1,25 @@
 ---
-title: "STAT331"
-format: html
-editor: visual
+title: "STAT 331"
+subtitle: "Group Project"
+format: 
+  html:
+    embed-resources: true
+    code-tools: true
+    toc: true
+    number-sections: true
+editor: source
+execute: 
+  error: true
+  echo: true
+  message: false
+  warning: false
 ---
 
 ## Library
 ```{r}
 library(tidyverse)
+library(naniar)
+library(kableExtra)
 ```
 
 
@@ -19,9 +32,31 @@ health <- read_csv("data/total_health_spending_per_person_us.csv")
 
 ## Cleaning Data 
 ```{r}
-
-str(life)
-
-str(health)
+life_exptcy <- life |> 
+   select("country", 197:212) |> 
+    pivot_longer(cols = !country, 
+               names_to = "Year",
+               values_to = "life_expectancy")
+health_spd <- health|>
+      pivot_longer(cols = !country, 
+               names_to = "Year",
+               values_to = "Spending")
 ```
 
+## Joining Data
+```{r}
+data <- inner_join(life_exptcy, health_spd,
+                   by = join_by(country,Year))
+```
+
+## Checking Data 
+```{r}
+country_count <- data |> 
+summarize(n_country = n_distinct(country)) 
+```
+
+```{r}
+missing_values <- data |> 
+  filter(if_any(.cols = everything(),
+                .fns = ~is.na(.x))) 
+```
