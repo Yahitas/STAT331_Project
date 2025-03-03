@@ -30,6 +30,28 @@ health <- read_csv("data/total_health_spending_per_person_us.csv")
 
 ```
 
+## Data Description 
+For this data, countries are defined as boundaries as of current geographic boundaries, world history is also shown as if country borders had always been the same as current boundaries. 
+
+*Total health spending per person in US$* 
+This data set ranges from the time period 1995-2010 and shows the average health expenditure per person, expressed in US dollars using the average exchange rate. These values are determined by the World Health Organization (WHO). An average exchange rate is a way to convert from foreign currency to US dollars by dividing the foreign currency amount by an applicable yearly average exchange rate developed by the IRS.
+Source: https://www.gapminder.org/data/ 
+
+*Life expectancy, at birth*
+This data ranges from a time period of 1800-2100 with the future years being forecasts calculated by the UN. From the years 1800-1970, the main source of this data is from Mattias Lindgen and Klara Johansson. From 1950-2019 the main source of this data is from Institute for Health Metrics and Evaluation (IHME). Life expectancy is defined as the number of years a newborn infant would live if the current mortality rates at different ages were constant. We used the most recent version available to us, Version 14, which was last updated on October 10th 2017. 
+Source: https://www.gapminder.org/data/ 
+
+
+## Hypothesis 
+We hypothesize that higher spending on health will increase life expectancy. Past research conducted on similar topics have shown that increases in healthcare related social policies have increased life expectancy in the United States (Reynolds, 2019). Applying these same principles to the aforementioned variables, we believe that increased funding leads to increased life span.
+Source: https://pmc.ncbi.nlm.nih.gov/articles/PMC5739520/ 
+
+
+## Data Cleaning Process
+First, we focused on narrowing down the life expectancy dataset to the years that overlap with the total health spending per person data set (1995 to 2010). Similarly, our next focus was to narrow down the list of countries to those provided in the total health spending per person data set. Doing so revealed a list of 188 of countries across Europe, Africa, and the Americas. This dataset has 32 missing values all in the spending column of our data set, which we labeled as N/A. Luckily, both datasets were consistently formatted in dollars and years, so no adjustment was needed in this regard.
+
+
+
 ## Cleaning Data 
 ```{r}
 life_exptcy <- life |> 
@@ -60,3 +82,6 @@ missing_values <- data |>
   filter(if_any(.cols = everything(),
                 .fns = ~is.na(.x))) 
 ```
+
+
+
