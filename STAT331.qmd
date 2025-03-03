@@ -1,12 +1,14 @@
 ---
-title: "STAT 331"
-subtitle: "Group Project"
+title: "STAT 331 Group Project"
+subtitle: "Analyzing the Effect of Health Spending on Life Expectancy"
+authors: "Gracie, Anaïs, Kyle, Ryan"
 format: 
   html:
     embed-resources: true
     code-tools: true
     toc: true
     number-sections: true
+    code-fold: true
 editor: source
 execute: 
   error: true
@@ -14,16 +16,20 @@ execute:
   message: false
   warning: false
 ---
+# Project Proposal and Data
 
-## Library
+The United States is infamous for its exceptionally high healthcare costs, but does this substantial spending translate to longer lifespans? By examining total healthcare expenditure per person (in US dollars) across 188 countries, we aim to uncover its impact on life expectancy.
+
+## Importing Libraries
 ```{r}
 library(tidyverse)
-library(naniar)
+library(dplyr)
+library(ggplot2)
+library(knitr)
 library(kableExtra)
 ```
 
-
-## Importing Data 
+## Importing the Datasets 
 ```{r}
 life <- read_csv("data/lex.csv")
 health <- read_csv("data/total_health_spending_per_person_us.csv")
@@ -34,10 +40,12 @@ health <- read_csv("data/total_health_spending_per_person_us.csv")
 For this data, countries are defined as boundaries as of current geographic boundaries, world history is also shown as if country borders had always been the same as current boundaries. 
 
 *Total health spending per person in US$* 
+
 This data set ranges from the time period 1995-2010 and shows the average health expenditure per person, expressed in US dollars using the average exchange rate. These values are determined by the World Health Organization (WHO). An average exchange rate is a way to convert from foreign currency to US dollars by dividing the foreign currency amount by an applicable yearly average exchange rate developed by the IRS.
 Source: https://www.gapminder.org/data/ 
 
 *Life expectancy, at birth*
+
 This data ranges from a time period of 1800-2100 with the future years being forecasts calculated by the UN. From the years 1800-1970, the main source of this data is from Mattias Lindgen and Klara Johansson. From 1950-2019 the main source of this data is from Institute for Health Metrics and Evaluation (IHME). Life expectancy is defined as the number of years a newborn infant would live if the current mortality rates at different ages were constant. We used the most recent version available to us, Version 14, which was last updated on October 10th 2017. 
 Source: https://www.gapminder.org/data/ 
 
@@ -47,41 +55,87 @@ We hypothesize that higher spending on health will increase life expectancy. Pas
 Source: https://pmc.ncbi.nlm.nih.gov/articles/PMC5739520/ 
 
 
-## Data Cleaning Process
+## Cleaning the Data
 First, we focused on narrowing down the life expectancy dataset to the years that overlap with the total health spending per person data set (1995 to 2010). Similarly, our next focus was to narrow down the list of countries to those provided in the total health spending per person data set. Doing so revealed a list of 188 of countries across Europe, Africa, and the Americas. This dataset has 32 missing values all in the spending column of our data set, which we labeled as N/A. Luckily, both datasets were consistently formatted in dollars and years, so no adjustment was needed in this regard.
 
-
-
-## Cleaning Data 
 ```{r}
 life_exptcy <- life |> 
    select("country", 197:212) |> 
     pivot_longer(cols = !country, 
                names_to = "Year",
-               values_to = "life_expectancy")
+               values_to = "Life Expectancy") |>
+  rename(Country = country)
+
 health_spd <- health|>
       pivot_longer(cols = !country, 
                names_to = "Year",
-               values_to = "Spending")
+               values_to = "Spending") |>
+   rename(Country = country)
 ```
 
-## Joining Data
+## Joining the Datasets
 ```{r}
 data <- inner_join(life_exptcy, health_spd,
-                   by = join_by(country,Year))
+                   by = join_by(Country,Year))
+head(data) |>
+  kable(
+      col.names = c("Country", "Year", "Life Expectancy", "Health Spending"),
+      caption = "Life Expectancy and Health Spending by Country and Year") |>
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed")) |>
+  column_spec(1, bold = TRUE)
+
 ```
 
-## Checking Data 
+## Total Number of Countries
 ```{r}
 country_count <- data |> 
-summarize(n_country = n_distinct(country)) 
+summarize(Number_of_Countries = n_distinct(Country))
+  kable(country_count)
 ```
 
+## Number of Missing Data
 ```{r}
 missing_values <- data |> 
-  filter(if_any(.cols = everything(),
-                .fns = ~is.na(.x))) 
+  summarize(across(everything(), ~sum(is.na(.x))))
+kable(missing_values)
 ```
 
+# Linear Regression
+
+In this section we hope to visualize the relationship between the two variables of interest and use a linear regression to model this relationship for further analysis. To do so, the total health spending per person will be our independent variable as we are looking to understand the impact of this variable on life expectancy. 
+
+## Data Visualization 1 - The Effect of Health Spending on Life Expectancy
+
+The plot below shows the relationship between Total Health Spending per person in US Dollars and Life Expectancy expressed in years. 
+```{r}
+ggplot(data = data,
+           aes(x = Spending, y = `Life Expectancy`)) + 
+      geom_point(color = "steelblue", alpha = 0.6) + 
+      labs(x = "Spending (in USD)",
+           y = "Life Expectancy (in Years)",
+           title = "The Effect of Health Spending on Life Expectancy") +
+  theme_minimal()
+```
+ADD OBSERVATION PARAGRAPH HERE
 
 
+## Data Visualization 2 - Average Health Spending vs Life Expectancy Over Time
+
+The following plot analyzes the relationship between the Average Total Health Spending and Average Life Expectancy over time, highlighting how changes in healthcare investment correlate with improvements in longevity. By aggregating data across all countries, this visualization provides a clearer picture of global trends, reducing noise from individual country variations.
+
+```{r}
+summary_data <- data |>
+  group_by(Year) |>
+  summarize(mean_spending = mean(Spending, na.rm = TRUE),
+            mean_life_expectancy = mean(`Life Expectancy`, na.rm = TRUE))
+            
+ggplot(summary_data, 
+       aes(x = mean_spending, 
+           y = mean_life_expectancy)) + 
+  geom_line(color = "steelblue", size = 1) + 
+  labs(x = "Average Health Spending (in USD)", 
+       y = "Average Life Expectancy (in Years)",
+       title = "Average Health Spending vs Life Expectancy Over Time") +
+  theme_minimal()
+```
+ADD OBSERVATION PARAHRAPH HERE
