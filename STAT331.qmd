@@ -139,3 +139,25 @@ ggplot(summary_data,
   theme_minimal()
 ```
 ADD OBSERVATION PARAHRAPH HERE
+
+## Lienar Regression Model
+The data we used to fit the linear model comes from averaging the health spending and life expectancy across all years for each country. This allows us to compare individual countries so we can look for any trends between countries while reducing complexity and volume of data points.
+
+This linear regression model models the relationship between life expectancy and the logarithm of health spending. The plot, pre-transformation of the explanatory variable, showed a logarithmic curve. To linearize the data, we had to perform a logarithmic transformation on the explanatory variable, average health spending.
+```{r}
+summarized_country <- data |>
+  group_by(Country) |>
+  summarize(mean_spending = mean(Spending, na.rm = TRUE),
+            mean_life_expectancy = mean(`Life Expectancy`, na.rm = TRUE))
+
+summarized_country |>
+  ggplot(mapping = aes(x = log(mean_spending),
+                       y = mean_life_expectancy)) +
+  geom_jitter() +
+  geom_smooth(method = "lm")
+
+life_exptcy_lm <- lm(mean_life_expectancy ~ log(mean_spending),
+                     data = summarized_country)
+summary(life_exptcy_lm)
+```
+INTERPRET COEFFICIENTS
