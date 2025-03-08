@@ -76,6 +76,9 @@ health_spd <- health|>
                names_to = "Year",
                values_to = "Spending") |>
    rename(Country = country)
+
+models <- data |> 
+  clean_names()
 ```
 
 ## Joining the Datasets
@@ -183,109 +186,23 @@ summary(life_exptcy_lm)
 
 With the equation y = 46.3 + 4.25x and with x being the independent variables and y representing the dependent variables, this equation can help predict the average life expectancy with the average spending amount. 46.3 in the equation represents the average health expectancy if the health spending were 0 USD. The 4.25 is the predicted change in average life expectancy for every USD increase in average spending. The R\^2 value shows that 63% of the variation in average life expectancy can be explained by the average health spending.
 
-```{r}
-colnames(summarized_country)
-colnames(data)
-str(summarized_country)
-data<- data |> 
-  clean_names()
-
-summarized_country <- summarized_country |> 
-  mutate(Country = as.factor(Country))
-```
+### Model Fit Test
 
 ```{r}
-library(tidyverse)
-library(broom)
-library(knitr)
-library(kableExtra)
-
 models <- list(
-     "Simple Linear (Mean Spending, No Log)"  = lm(mean_life_expectancy ~ mean_spending, data = summarized_country),
-   "Simple Linear (Mean Spending, Log)"     = lm(mean_life_expectancy ~ log(mean_spending), data = summarized_country),
-    "Simple Linear (Yearly Spending, No Log)"= lm(life_expectancy ~ spending, data = data),
-  "Simple Linear (Yearly Spending, Log)"   =  lm(life_expectancy ~ log(spending), data = data))
+  "Model 1 (Mean Spending, No Log)"= lm(mean_life_expectancy ~ mean_spending, data = summarized_country),
+  "Model 2 (Mean Spending, Log)"= lm(mean_life_expectancy ~ log(mean_spending), data = summarized_country),
+  "Model 3(Yearly Spending, No Log)"= lm(life_expectancy ~ spending, data = models),
+  "Model 4 (Yearly Spending, Log)"= lm(life_expectancy ~ log(spending), data = models))
 
-model_comparison <- enframe(models, name = "Model", value = "Fit") |> 
-  mutate("R-Squared" = map_dbl(Fit, ~ glance(.x)$r.squared)) |> 
-  select(-Fit)  
+final_model<- enframe(models, name = "Model", value = "Fit") |> 
+  mutate("Variance in Response Values"= map_dbl(Fit, ~ var(model.frame(.x)[,1])),  
+    "Variance in Fitted Values"= map_dbl(Fit, ~ var(fitted(.x))),      
+    "Variance in Residuals"= map_dbl(Fit, ~ var(residuals(.x)))) |>
+  mutate("R-Squared"= map_dbl(Fit, ~ glance(.x)$r.squared)) |> 
+  select(-Fit) 
 
 datatable(final_model, options = list(pageLength = 10, autoWidth = TRUE),
           caption = HTML("<h3 style='text-align:center; font-weight:bold;'>Model Fit Test Table  </h3>")) |> 
   formatRound(columns = c("Variance in Response Values", "Variance in Fitted Values", "Variance in Residuals", "R-Squared"), digits = 3)
-
-```
-
-```{r}
-library(tidyverse)
-library(knitr)
-library(kableExtra)
-
-# Define models
-models <- list(
-  "Simple Linear (Mean Spending, No Log)"  = lm(mean_life_expectancy ~ mean_spending, data = summarized_country),
-  "Simple Linear (Mean Spending, Log)"     = lm(mean_life_expectancy ~ log(mean_spending), data = summarized_country),
-  "Simple Linear (Yearly Spending, No Log)"= lm(life_expectancy ~ spending, data = data),
-  "Simple Linear (Yearly Spending, Log)"   = lm(life_expectancy ~ log(spending), data = data))
-
-model_comparison <- enframe(models, name = "Model", value = "Fit") |> 
-  mutate("R-Squared" = map_dbl(Fit, ~ summary(.x)$r.squared)) |> 
-  select(-Fit)
-
-
-kable(model_comparison, format = "html", caption = "Model R-Squared Comparison") |> 
-  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
-
-```
-
-```{r}
-# Load necessary libraries
-library(tidyverse)
-library(broom)
-library(knitr)
-library(kableExtra)
-
-
-models <- list(
-  "Model 1 (Mean Spending, No Log)"  = lm(mean_life_expectancy ~ mean_spending, data = summarized_country),
-  "Model 2 (Mean Spending, Log)"     = lm(mean_life_expectancy ~ log(mean_spending), data = summarized_country),
-  "Model 3(Yearly Spending, No Log)"= lm(life_expectancy ~ spending, data = data),
-  "Model 4 (Yearly Spending, Log)"   = lm(life_expectancy ~ log(spending), data = data))
-
-
-final_model<- enframe(models, name = "Model", value = "Fit") |> 
-  mutate("Variance in Response Values" = map_dbl(Fit, ~ var(model.frame(.x)[,1])),  
-    "Variance in Fitted Values" = map_dbl(Fit, ~ var(fitted(.x))),      
-    "Variance in Residuals" = map_dbl(Fit, ~ var(residuals(.x)))) |>
-  mutate("R-Squared" = map_dbl(Fit, ~ glance(.x)$r.squared)) |> 
-  select(-Fit) 
-
-kable(final_model, format = "html", caption = "Regression Models") |> 
-  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
-
-```
-
-```{r}
-datatable(final_model, options = list(pageLength = 10, autoWidth = TRUE),
-          caption = HTML("<h3 style='text-align:center; font-weight:bold;'>Table: Model </h3>")) |> 
-  formatRound(columns = c("Variance in Response Values", "Variance in Fitted Values", "Variance in Residuals", "R-Squared"), digits = 4)
-```
-
-```{r}
-caption = htmltools::HTML(kable_html))
-
-```
-
-```{r}
-# Generate kable HTML table
-kable_html <- final_model %>%
-  kable("html", caption = "<b>Final Model Results</b>") %>%
-  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
-
-# Embed kable inside datatable
-datatable(as.data.frame(final_model), 
-          escape = FALSE, 
-          options = list(pageLength = 10, autoWidth = TRUE), 
-          caption = htmltools::HTML(kable_html))
-
 ```
