@@ -33,6 +33,7 @@ library(ggpmisc)
 library(DT)
 library(broom)
 library(htmltools)
+library(janitor)
 ```
 
 ## Importing the Datasets
@@ -77,8 +78,6 @@ health_spd <- health|>
                values_to = "Spending") |>
    rename(Country = country)
 
-models <- data |> 
-  clean_names()
 ```
 
 ## Joining the Datasets
@@ -189,6 +188,10 @@ With the equation y = 46.3 + 4.25x and with x being the independent variables an
 ### Model Fit Test
 
 ```{r}
+
+models <- data |> 
+  janitor::clean_names()
+
 models <- list(
   "Model 1 (Mean Spending, No Log)"= lm(mean_life_expectancy ~ mean_spending, data = summarized_country),
   "Model 2 (Mean Spending, Log)"= lm(mean_life_expectancy ~ log(mean_spending), data = summarized_country),
