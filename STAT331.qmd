@@ -27,6 +27,7 @@ library(dplyr)
 library(ggplot2)
 library(knitr)
 library(kableExtra)
+library(ggpmisc)
 ```
 
 ## Importing the Datasets 
@@ -116,7 +117,7 @@ ggplot(data = data,
            title = "The Effect of Health Spending on Life Expectancy") +
   theme_minimal()
 ```
-ADD OBSERVATION PARAGRAPH HERE
+The graph above shows how the plots are mostly concentrated on the left side of the graph. This indicates that the majority of the data shows a lower amount of spending on health care. In addition, it can also be seen that with a lower amount of spending, less than 1000 USD, there is a small number of observations where the life expectancy reaches above 80 years old and majority of the observations fall into the range of 40 to 75 years old. On the other hand, as the spending increases, so does the amount of observations with a recorded life expectancy above 80 years old. An inference could be made stating that with a smaller amount of spending a country dedicates towards healthcare, the lower the expected life expectancy could be. 
 
 
 ## Data Visualization 2 - Average Health Spending vs Life Expectancy Over Time
@@ -138,9 +139,9 @@ ggplot(summary_data,
        title = "Average Health Spending vs Life Expectancy Over Time") +
   theme_minimal()
 ```
-ADD OBSERVATION PARAHRAPH HERE
+The above figure shows an overall positive relationship between the average amount of health spending and average life expectancy. Compared to the first graph, the range for life expectancy and spending is not as large, given that the averages were taken, rather than individual countries and individual years. From this figure, the inference could be made that with a lower amount of spending, the lower the average life expectancy and with the higher amount of spending, the higher the life expectancy. However, this also raises the question of if health spending is increasing because the population already has a high life expectancy (with a longer lifespan there are more opportunities for health spending). 
 
-## Lienar Regression Model
+## Linear Regression Model
 The data we used to fit the linear model comes from averaging the health spending and life expectancy across all years for each country. This allows us to compare individual countries so we can look for any trends between countries while reducing complexity and volume of data points.
 
 This linear regression model models the relationship between life expectancy and the logarithm of health spending. The plot, pre-transformation of the explanatory variable, showed a logarithmic curve. To linearize the data, we had to perform a logarithmic transformation on the explanatory variable, average health spending.
@@ -154,10 +155,20 @@ summarized_country |>
   ggplot(mapping = aes(x = log(mean_spending),
                        y = mean_life_expectancy)) +
   geom_jitter() +
-  geom_smooth(method = "lm")
+  geom_smooth(method = "lm") + 
+  
+  stat_poly_eq(
+    aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")),
+    formula = y ~ x, 
+    parse = TRUE
+  ) +
+  
+  labs(x = "Average Health Spending (USD)", y = "Average Life Expectancy (years)")
 
 life_exptcy_lm <- lm(mean_life_expectancy ~ log(mean_spending),
                      data = summarized_country)
 summary(life_exptcy_lm)
 ```
-INTERPRET COEFFICIENTS
+With the equation y = 46.3 + 4.25x and with x being the independent variables and y representing the dependent variables, this equation can help predict the average life expectancy with the average spending amount. 46.3 in the equation represents the average health expectancy if the health spending were 0 USD. The 4.25 is the predicted change in average life expectancy for every USD increase in average spending. 
+
+
