@@ -184,7 +184,7 @@ life_exptcy_lm <- lm(mean_life_expectancy ~ log(mean_spending),
 summary(life_exptcy_lm)
 ```
 
-With the equation y = 46.3 + 4.25x and with x being the independent variables and y representing the dependent variables, this equation can help predict the average life expectancy with the average spending amount. 46.3 in the equation represents the average health expectancy if the health spending were 0 USD. The 4.25 is the predicted change in average life expectancy for every USD increase in average spending. The R\^2 value shows that 63% of the variation in average life expectancy can be explained by the average health spending.
+With the equation y = 46.3 + 4.25x and with x being the independent variables and y representing the dependent variables, this equation can help predict the average life expectancy with the average spending amount. 46.3 in the equation represents the average health expectancy if the health spending were 0 USD. The 4.25 is the predicted change in average life expectancy for every USD increase in average spending. The R\^2 value shows that 63% of the variation in average life expectancy can be explained by the average health spending. The average was taken in order to condense the data. 
 
 ### Model Fit Test
 
@@ -206,3 +206,7 @@ datatable(final_model, options = list(pageLength = 10, autoWidth = TRUE),
           caption = HTML("<h3 style='text-align:center; font-weight:bold;'>Model Fit Test Table  </h3>")) |> 
   formatRound(columns = c("Variance in Response Values", "Variance in Fitted Values", "Variance in Residuals", "R-Squared"), digits = 3)
 ```
+
+Comparing four different models, the one that has the best fit will help find the most effective model. The four models that were compared were all simple linear models, but had slight differences such as mean spending, no log; mean spending, log; yearly spending, no log; and yearly spending, log. The table above shows the corresponding R\^2 values, it shows the simple linear, mean spending, log as the most representative model. This is because the R\^2 value is the highest out of all the models, meaning that 63% the variation of the average life expectancy can be explained by the average health spending. This R\^2 value is a high enough value to make predictions and inferences with that would be statistically significant. In additon, Model 2 also has the lowest value for variance in residuals, making it the model with the lowest amount that the model does not account for.
+
+Referring back to the first figure, the relationship between the two variables follows a curved line. By taking the log of the spending, helps make it more linear, giving a more accurate R\^2 value and a model with a better fit.
