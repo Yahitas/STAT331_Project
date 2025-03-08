@@ -16,11 +16,13 @@ execute:
   message: false
   warning: false
 ---
+
 # Project Proposal and Data
 
 The United States is infamous for its exceptionally high healthcare costs, but does this substantial spending translate to longer lifespans? By examining total healthcare expenditure per person (in US dollars) across 188 countries, we aim to uncover its impact on life expectancy.
 
 ## Importing Libraries
+
 ```{r}
 library(tidyverse)
 library(dplyr)
@@ -28,35 +30,37 @@ library(ggplot2)
 library(knitr)
 library(kableExtra)
 library(ggpmisc)
+library(DT)
+library(broom)
+library(htmltools)
 ```
 
-## Importing the Datasets 
+## Importing the Datasets
+
 ```{r}
 life <- read_csv("data/lex.csv")
 health <- read_csv("data/total_health_spending_per_person_us.csv")
 
 ```
 
-## Data Description 
-For this data, countries are defined as boundaries as of current geographic boundaries, world history is also shown as if country borders had always been the same as current boundaries. 
+## Data Description
 
-*Total health spending per person in US$* 
+For this data, countries are defined as boundaries as of current geographic boundaries, world history is also shown as if country borders had always been the same as current boundaries.
 
-This data set ranges from the time period 1995-2010 and shows the average health expenditure per person, expressed in US dollars using the average exchange rate. These values are determined by the World Health Organization (WHO). An average exchange rate is a way to convert from foreign currency to US dollars by dividing the foreign currency amount by an applicable yearly average exchange rate developed by the IRS.
-Source: https://www.gapminder.org/data/ 
+*Total health spending per person in US\$*
+
+This data set ranges from the time period 1995-2010 and shows the average health expenditure per person, expressed in US dollars using the average exchange rate. These values are determined by the World Health Organization (WHO). An average exchange rate is a way to convert from foreign currency to US dollars by dividing the foreign currency amount by an applicable yearly average exchange rate developed by the IRS. Source: https://www.gapminder.org/data/
 
 *Life expectancy, at birth*
 
-This data ranges from a time period of 1800-2100 with the future years being forecasts calculated by the UN. From the years 1800-1970, the main source of this data is from Mattias Lindgen and Klara Johansson. From 1950-2019 the main source of this data is from Institute for Health Metrics and Evaluation (IHME). Life expectancy is defined as the number of years a newborn infant would live if the current mortality rates at different ages were constant. We used the most recent version available to us, Version 14, which was last updated on October 10th 2017. 
-Source: https://www.gapminder.org/data/ 
+This data ranges from a time period of 1800-2100 with the future years being forecasts calculated by the UN. From the years 1800-1970, the main source of this data is from Mattias Lindgen and Klara Johansson. From 1950-2019 the main source of this data is from Institute for Health Metrics and Evaluation (IHME). Life expectancy is defined as the number of years a newborn infant would live if the current mortality rates at different ages were constant. We used the most recent version available to us, Version 14, which was last updated on October 10th 2017. Source: https://www.gapminder.org/data/
 
+## Hypothesis
 
-## Hypothesis 
-We hypothesize that higher spending on health will increase life expectancy. Past research conducted on similar topics have shown that increases in healthcare related social policies have increased life expectancy in the United States (Reynolds, 2019). Applying these same principles to the aforementioned variables, we believe that increased funding leads to increased life span.
-Source: https://pmc.ncbi.nlm.nih.gov/articles/PMC5739520/ 
-
+We hypothesize that higher spending on health will increase life expectancy. Past research conducted on similar topics have shown that increases in healthcare related social policies have increased life expectancy in the United States (Reynolds, 2019). Applying these same principles to the aforementioned variables, we believe that increased funding leads to increased life span. Source: https://pmc.ncbi.nlm.nih.gov/articles/PMC5739520/
 
 ## Cleaning the Data
+
 First, we focused on narrowing down the life expectancy dataset to the years that overlap with the total health spending per person data set (1995 to 2010). Similarly, our next focus was to narrow down the list of countries to those provided in the total health spending per person data set. Doing so revealed a list of 188 of countries across Europe, Africa, and the Americas. This dataset has 32 missing values all in the spending column of our data set, which we labeled as N/A. Luckily, both datasets were consistently formatted in dollars and years, so no adjustment was needed in this regard.
 
 ```{r}
@@ -75,6 +79,7 @@ health_spd <- health|>
 ```
 
 ## Joining the Datasets
+
 ```{r}
 data <- inner_join(life_exptcy, health_spd,
                    by = join_by(Country,Year))
@@ -88,6 +93,7 @@ head(data) |>
 ```
 
 ## Total Number of Countries
+
 ```{r}
 country_count <- data |> 
 summarize(Number_of_Countries = n_distinct(Country))
@@ -95,6 +101,7 @@ summarize(Number_of_Countries = n_distinct(Country))
 ```
 
 ## Number of Missing Data
+
 ```{r}
 missing_values <- data |> 
   summarize(across(everything(), ~sum(is.na(.x))))
@@ -103,11 +110,12 @@ kable(missing_values)
 
 # Linear Regression
 
-In this section we hope to visualize the relationship between the two variables of interest and use a linear regression to model this relationship for further analysis. To do so, the total health spending per person will be our independent variable as we are looking to understand the impact of this variable on life expectancy. 
+In this section we hope to visualize the relationship between the two variables of interest and use a linear regression to model this relationship for further analysis. To do so, the total health spending per person will be our independent variable as we are looking to understand the impact of this variable on life expectancy.
 
 ## Data Visualization 1 - The Effect of Health Spending on Life Expectancy
 
-The plot below shows the relationship between Total Health Spending per person in US Dollars and Life Expectancy expressed in years. 
+The plot below shows the relationship between Total Health Spending per person in US Dollars and Life Expectancy expressed in years.
+
 ```{r}
 ggplot(data = data,
            aes(x = Spending, y = `Life Expectancy`)) + 
@@ -117,8 +125,8 @@ ggplot(data = data,
            title = "The Effect of Health Spending on Life Expectancy") +
   theme_minimal()
 ```
-The graph above shows how the plots are mostly concentrated on the left side of the graph. This indicates that the majority of the data shows a lower amount of spending on health care. In addition, it can also be seen that with a lower amount of spending, less than 1000 USD, there is a small number of observations where the life expectancy reaches above 80 years old and majority of the observations fall into the range of 40 to 75 years old. On the other hand, as the spending increases, so does the amount of observations with a recorded life expectancy above 80 years old. An inference could be made stating that with a smaller amount of spending a country dedicates towards healthcare, the lower the expected life expectancy could be. 
 
+The graph above shows how the plots are mostly concentrated on the left side of the graph. This indicates that the majority of the data shows a lower amount of spending on health care. In addition, it can also be seen that with a lower amount of spending, less than 1000 USD, there is a small number of observations where the life expectancy reaches above 80 years old and majority of the observations fall into the range of 40 to 75 years old. On the other hand, as the spending increases, so does the amount of observations with a recorded life expectancy above 80 years old. An inference could be made stating that with a smaller amount of spending a country dedicates towards healthcare, the lower the expected life expectancy could be.
 
 ## Data Visualization 2 - Average Health Spending vs Life Expectancy Over Time
 
@@ -139,12 +147,15 @@ ggplot(summary_data,
        title = "Average Health Spending vs Life Expectancy Over Time") +
   theme_minimal()
 ```
-The above figure shows an overall positive relationship between the average amount of health spending and average life expectancy. Compared to the first graph, the range for life expectancy and spending is not as large, given that the averages were taken, rather than individual countries and individual years. From this figure, the inference could be made that with a lower amount of spending, the lower the average life expectancy and with the higher amount of spending, the higher the life expectancy. However, this also raises the question of if health spending is increasing because the population already has a high life expectancy (with a longer lifespan there are more opportunities for health spending). 
+
+The above figure shows an overall positive relationship between the average amount of health spending and average life expectancy. Compared to the first graph, the range for life expectancy and spending is not as large, given that the averages were taken, rather than individual countries and individual years. From this figure, the inference could be made that with a lower amount of spending, the lower the average life expectancy and with the higher amount of spending, the higher the life expectancy. However, this also raises the question of if health spending is increasing because the population already has a high life expectancy (with a longer lifespan there are more opportunities for health spending).
 
 ## Linear Regression Model
+
 The data we used to fit the linear model comes from averaging the health spending and life expectancy across all years for each country. This allows us to compare individual countries so we can look for any trends between countries while reducing complexity and volume of data points.
 
 This linear regression model models the relationship between life expectancy and the logarithm of health spending. The plot, pre-transformation of the explanatory variable, showed a logarithmic curve. To linearize the data, we had to perform a logarithmic transformation on the explanatory variable, average health spending.
+
 ```{r}
 summarized_country <- data |>
   group_by(Country) |>
@@ -169,6 +180,112 @@ life_exptcy_lm <- lm(mean_life_expectancy ~ log(mean_spending),
                      data = summarized_country)
 summary(life_exptcy_lm)
 ```
-With the equation y = 46.3 + 4.25x and with x being the independent variables and y representing the dependent variables, this equation can help predict the average life expectancy with the average spending amount. 46.3 in the equation represents the average health expectancy if the health spending were 0 USD. The 4.25 is the predicted change in average life expectancy for every USD increase in average spending. The R^2 value shows that 63% of the variation in average life expectancy can be explained by the average health spending. 
+
+With the equation y = 46.3 + 4.25x and with x being the independent variables and y representing the dependent variables, this equation can help predict the average life expectancy with the average spending amount. 46.3 in the equation represents the average health expectancy if the health spending were 0 USD. The 4.25 is the predicted change in average life expectancy for every USD increase in average spending. The R\^2 value shows that 63% of the variation in average life expectancy can be explained by the average health spending.
+
+```{r}
+colnames(summarized_country)
+colnames(data)
+str(summarized_country)
+data<- data |> 
+  clean_names()
+
+summarized_country <- summarized_country |> 
+  mutate(Country = as.factor(Country))
+```
+
+```{r}
+library(tidyverse)
+library(broom)
+library(knitr)
+library(kableExtra)
+
+models <- list(
+     "Simple Linear (Mean Spending, No Log)"  = lm(mean_life_expectancy ~ mean_spending, data = summarized_country),
+   "Simple Linear (Mean Spending, Log)"     = lm(mean_life_expectancy ~ log(mean_spending), data = summarized_country),
+    "Simple Linear (Yearly Spending, No Log)"= lm(life_expectancy ~ spending, data = data),
+  "Simple Linear (Yearly Spending, Log)"   =  lm(life_expectancy ~ log(spending), data = data))
+
+model_comparison <- enframe(models, name = "Model", value = "Fit") |> 
+  mutate("R-Squared" = map_dbl(Fit, ~ glance(.x)$r.squared)) |> 
+  select(-Fit)  
+
+datatable(final_model, options = list(pageLength = 10, autoWidth = TRUE),
+          caption = HTML("<h3 style='text-align:center; font-weight:bold;'>Model Fit Test Table  </h3>")) |> 
+  formatRound(columns = c("Variance in Response Values", "Variance in Fitted Values", "Variance in Residuals", "R-Squared"), digits = 3)
+
+```
+
+```{r}
+library(tidyverse)
+library(knitr)
+library(kableExtra)
+
+# Define models
+models <- list(
+  "Simple Linear (Mean Spending, No Log)"  = lm(mean_life_expectancy ~ mean_spending, data = summarized_country),
+  "Simple Linear (Mean Spending, Log)"     = lm(mean_life_expectancy ~ log(mean_spending), data = summarized_country),
+  "Simple Linear (Yearly Spending, No Log)"= lm(life_expectancy ~ spending, data = data),
+  "Simple Linear (Yearly Spending, Log)"   = lm(life_expectancy ~ log(spending), data = data))
+
+model_comparison <- enframe(models, name = "Model", value = "Fit") |> 
+  mutate("R-Squared" = map_dbl(Fit, ~ summary(.x)$r.squared)) |> 
+  select(-Fit)
 
 
+kable(model_comparison, format = "html", caption = "Model R-Squared Comparison") |> 
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+
+```
+
+```{r}
+# Load necessary libraries
+library(tidyverse)
+library(broom)
+library(knitr)
+library(kableExtra)
+
+
+models <- list(
+  "Model 1 (Mean Spending, No Log)"  = lm(mean_life_expectancy ~ mean_spending, data = summarized_country),
+  "Model 2 (Mean Spending, Log)"     = lm(mean_life_expectancy ~ log(mean_spending), data = summarized_country),
+  "Model 3(Yearly Spending, No Log)"= lm(life_expectancy ~ spending, data = data),
+  "Model 4 (Yearly Spending, Log)"   = lm(life_expectancy ~ log(spending), data = data))
+
+
+final_model<- enframe(models, name = "Model", value = "Fit") |> 
+  mutate("Variance in Response Values" = map_dbl(Fit, ~ var(model.frame(.x)[,1])),  
+    "Variance in Fitted Values" = map_dbl(Fit, ~ var(fitted(.x))),      
+    "Variance in Residuals" = map_dbl(Fit, ~ var(residuals(.x)))) |>
+  mutate("R-Squared" = map_dbl(Fit, ~ glance(.x)$r.squared)) |> 
+  select(-Fit) 
+
+kable(final_model, format = "html", caption = "Regression Models") |> 
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+
+```
+
+```{r}
+datatable(final_model, options = list(pageLength = 10, autoWidth = TRUE),
+          caption = HTML("<h3 style='text-align:center; font-weight:bold;'>Table: Model </h3>")) |> 
+  formatRound(columns = c("Variance in Response Values", "Variance in Fitted Values", "Variance in Residuals", "R-Squared"), digits = 4)
+```
+
+```{r}
+caption = htmltools::HTML(kable_html))
+
+```
+
+```{r}
+# Generate kable HTML table
+kable_html <- final_model %>%
+  kable("html", caption = "<b>Final Model Results</b>") %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+
+# Embed kable inside datatable
+datatable(as.data.frame(final_model), 
+          escape = FALSE, 
+          options = list(pageLength = 10, autoWidth = TRUE), 
+          caption = htmltools::HTML(kable_html))
+
+```
