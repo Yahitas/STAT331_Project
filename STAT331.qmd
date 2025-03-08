@@ -169,6 +169,6 @@ life_exptcy_lm <- lm(mean_life_expectancy ~ log(mean_spending),
                      data = summarized_country)
 summary(life_exptcy_lm)
 ```
-With the equation y = 46.3 + 4.25x and with x being the independent variables and y representing the dependent variables, this equation can help predict the average life expectancy with the average spending amount. 46.3 in the equation represents the average health expectancy if the health spending were 0 USD. The 4.25 is the predicted change in average life expectancy for every USD increase in average spending. 
+With the equation y = 46.3 + 4.25x and with x being the independent variables and y representing the dependent variables, this equation can help predict the average life expectancy with the average spending amount. 46.3 in the equation represents the average health expectancy if the health spending were 0 USD. The 4.25 is the predicted change in average life expectancy for every USD increase in average spending. The R^2 value shows that 63% of the variation in average life expectancy can be explained by the average health spending. 
 
 
