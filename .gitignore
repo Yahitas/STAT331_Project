@@ -6,3 +6,5 @@
 *Rproj
 *.git.Rproj.user
 *.git.Rproj
+.Rproj.user
+STAT331_Project.git.Rproj
