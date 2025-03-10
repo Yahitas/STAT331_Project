@@ -34,6 +34,8 @@ library(DT)
 library(broom)
 library(htmltools)
 library(janitor)
+library(gridExtra)
+library(patchwork)
 ```
 
 ## Importing the Datasets
@@ -114,7 +116,7 @@ kable(missing_values)
 
 In this section we hope to visualize the relationship between the two variables of interest and use a linear regression to model this relationship for further analysis. To do so, the total health spending per person will be our independent variable as we are looking to understand the impact of this variable on life expectancy.
 
-## Data Visualization 1 - The Effect of Health Spending on Life Expectancy
+## Data Visualization 1 - Relationship Between Health Spending and Life Expectancy
 
 The plot below shows the relationship between Total Health Spending per person in US Dollars and Life Expectancy expressed in years.
 
@@ -124,7 +126,7 @@ ggplot(data = data,
       geom_point(color = "steelblue", alpha = 0.6) + 
       labs(x = "Spending (in USD)",
            y = "Life Expectancy (in Years)",
-           title = "The Effect of Health Spending on Life Expectancy") +
+           title = "Relationship Between Health Spending and Life Expectancy") +
   theme_minimal()
 ```
 
@@ -185,7 +187,7 @@ summary(life_exptcy_lm)
 
 With the equation y = 46.3 + 4.25x and with x being the independent variables and y representing the dependent variables, this equation can help predict the average life expectancy with the average spending amount. 46.3 in the equation represents the average health expectancy if the health spending were 0 USD. The 4.25 is the predicted change in average life expectancy for every USD increase in average spending. The R\^2 value shows that 63% of the variation in average life expectancy can be explained by the average health spending. The average was taken in order to condense the data.
 
-### Model Fit Test
+## Model Fit Test
 
 ```{r}
 
@@ -213,3 +215,78 @@ datatable(final_model, options = list(pageLength = 10, autoWidth = TRUE),
 Comparing four different models, the one that has the best fit will help find the most effective model. The four models that were compared were all simple linear models, but had slight differences such as mean spending, no log; mean spending, log; yearly spending, no log; and yearly spending, log. The table above shows the corresponding R\^2 values, it shows the simple linear, mean spending, log as the most representative model. This is because the R\^2 value is the highest out of all the models, meaning that 63% the variation of the average life expectancy can be explained by the average health spending. This R\^2 value is a high enough value to make predictions and inferences with that would be statistically significant. In addition, Model 2 also has the lowest value for variance in residuals, making it the model with the lowest amount that the model does not account for.
 
 Referring back to the first figure, the relationship between the two variables follows a curved line. By taking the log of the spending, helps make it more linear, giving a more accurate R\^2 value and a model with a better fit.
+
+# Simulation
+
+## Creating a Simulated Dataset
+```{r}
+
+predicted_exp <- predict(life_exptcy_lm, newdata = summarized_country)
+est_sigma <- sigma(life_exptcy_lm)
+
+# function to add the normal random error to our predictions
+rand_error <- function(x, mean = 0, sd){
+  
+  error <- rnorm(length(x), mean = mean, sd = sd)
+  x + error
+}
+
+# simulating the data using the function with seed for reproducibility 
+set.seed(1234) 
+
+sim_response <- rand_error(predicted_exp, sd = est_sigma)
+sim_data <- summarized_country |> 
+  mutate(Simulated_Life_Expectancy = sim_response)
+
+# visualizing the simulated data set
+
+head(sim_data) |>
+  kable(
+    col.names = c("Country", "Mean Spending", "Mean Life Expectancy", "Simulated Life Expectancy"),
+    caption = "Simulated Life Expectancy and Health Spending by Country"
+  ) |>
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed")) |>
+  column_spec(1, bold = TRUE)
+```
+
+# Visualizing the Simulated Dataset
+```{r}
+# setting limits for the plot
+x_limits <- range(summarized_country$mean_spending, na.rm = TRUE)
+y_limits <- range(summarized_country$mean_life_expectancy, sim_data$Simulated_Life_Expectancy, na.rm = TRUE)
+
+# plotting the observed data and fitting a log line
+obs_data_plot <- summarized_country |>
+  ggplot(aes(y = mean_life_expectancy,
+             x = mean_spending)) +
+  geom_point(color = "steelblue2", alpha = 0.5) +
+  geom_smooth(method = "lm", color = "red2", 
+              formula = y ~ log(x), se = FALSE, linetype = "dashed") + 
+  labs(title = "Observed Life Expectancy",
+       x = "Health Spending (USD)",
+       y = "",
+       subtitle = "Life Expectancy (Years)") +
+    xlim(x_limits) + ylim(y_limits) + 
+  theme_bw() 
+
+# plotting the simulated data with the same log line for comparison
+sim_data_plot <- sim_data |>
+  ggplot(aes(y = Simulated_Life_Expectancy,
+             x = mean_spending)) +
+  geom_point(color = "olivedrab3", alpha = 0.5) +
+  geom_smooth(method = "lm", color = "red2", 
+              formula = y ~ log(x), se = FALSE, linetype = "dashed") + 
+  labs(title = "Simulated Life Expectancy",
+       x = "Health Spending (USD)",
+       y = "",
+       subtitle = "Life Expectancy (Years)") + 
+  xlim(x_limits) + ylim(y_limits) + 
+  theme_bw()
+
+# putting the plots side by side 
+obs_data_plot + sim_data_plot
+  
+```
+sources: https://manncz.github.io/stat331-calpoly-text/10-predictive-checks.html#ch10-checkins, https://www.statology.org/logarithmic-regression-in-r/, https://sqlpad.io/tutorial/set-ylim-xlim-graphs-examples/#:~:text=Q%3A%20How%20do%20I%20set,axis%20from%200%20to%2020, https://patchwork.data-imaginist.com/
+
+ADD OBSERVATIONS HERE
