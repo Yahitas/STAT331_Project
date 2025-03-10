@@ -35,6 +35,8 @@ library(broom)
 library(htmltools)
 library(janitor)
 library(ggtext)
+library(gridExtra)
+library(patchwork)
 ```
 
 ## Importing the Datasets
@@ -127,7 +129,7 @@ ggplot(data = data,
       geom_point(color = "steelblue", alpha = 0.6) + 
       labs(x = "Spending (in USD)",
            y = "Life Expectancy (in Years)",
-           title = "The Effect of Health Spending on Life Expectancy") +
+           title = "Relationship Between Health Spending and Life Expectancy") +
   theme_minimal()
 ```
 
@@ -272,3 +274,77 @@ tibble(sims = sims_r_squared) |>
         axis.title.x = element_markdown())
 ```
 
+# Simulation
+
+## Creating a Simulated Dataset
+```{r}
+
+predicted_exp <- predict(life_exptcy_lm, newdata = summarized_country)
+est_sigma <- sigma(life_exptcy_lm)
+
+# function to add the normal random error to our predictions
+rand_error <- function(x, mean = 0, sd){
+  
+  error <- rnorm(length(x), mean = mean, sd = sd)
+  x + error
+}
+
+# simulating the data using the function with seed for reproducibility 
+set.seed(1234) 
+
+sim_response <- rand_error(predicted_exp, sd = est_sigma)
+sim_data <- summarized_country |> 
+  mutate(Simulated_Life_Expectancy = sim_response)
+
+# visualizing the simulated data set
+
+head(sim_data) |>
+  kable(
+    col.names = c("Country", "Mean Spending", "Mean Life Expectancy", "Simulated Life Expectancy"),
+    caption = "Simulated Life Expectancy and Health Spending by Country"
+  ) |>
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed")) |>
+  column_spec(1, bold = TRUE)
+```
+
+# Visualizing the Simulated Dataset
+```{r}
+# setting limits for the plot
+x_limits <- range(summarized_country$mean_spending, na.rm = TRUE)
+y_limits <- range(summarized_country$mean_life_expectancy, sim_data$Simulated_Life_Expectancy, na.rm = TRUE)
+
+# plotting the observed data and fitting a log line
+obs_data_plot <- summarized_country |>
+  ggplot(aes(y = mean_life_expectancy,
+             x = mean_spending)) +
+  geom_point(color = "steelblue2", alpha = 0.5) +
+  geom_smooth(method = "lm", color = "red2", 
+              formula = y ~ log(x), se = FALSE, linetype = "dashed") + 
+  labs(title = "Observed Life Expectancy",
+       x = "Health Spending (USD)",
+       y = "",
+       subtitle = "Life Expectancy (Years)") +
+    xlim(x_limits) + ylim(y_limits) + 
+  theme_bw() 
+
+# plotting the simulated data with the same log line for comparison
+sim_data_plot <- sim_data |>
+  ggplot(aes(y = Simulated_Life_Expectancy,
+             x = mean_spending)) +
+  geom_point(color = "olivedrab3", alpha = 0.5) +
+  geom_smooth(method = "lm", color = "red2", 
+              formula = y ~ log(x), se = FALSE, linetype = "dashed") + 
+  labs(title = "Simulated Life Expectancy",
+       x = "Health Spending (USD)",
+       y = "",
+       subtitle = "Life Expectancy (Years)") + 
+  xlim(x_limits) + ylim(y_limits) + 
+  theme_bw()
+
+# putting the plots side by side 
+obs_data_plot + sim_data_plot
+  
+```
+sources: https://manncz.github.io/stat331-calpoly-text/10-predictive-checks.html#ch10-checkins, https://www.statology.org/logarithmic-regression-in-r/, https://sqlpad.io/tutorial/set-ylim-xlim-graphs-examples/#:~:text=Q%3A%20How%20do%20I%20set,axis%20from%200%20to%2020, https://patchwork.data-imaginist.com/
+
+ADD OBSERVATIONS HERE
