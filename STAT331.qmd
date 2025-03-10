@@ -34,6 +34,7 @@ library(DT)
 library(broom)
 library(htmltools)
 library(janitor)
+library(ggtext)
 ```
 
 ## Importing the Datasets
@@ -114,7 +115,9 @@ kable(missing_values)
 
 In this section we hope to visualize the relationship between the two variables of interest and use a linear regression to model this relationship for further analysis. To do so, the total health spending per person will be our independent variable as we are looking to understand the impact of this variable on life expectancy.
 
-## Data Visualization 1 - The Effect of Health Spending on Life Expectancy
+## Data Visualizations
+
+### Data Visualization 1 - The Effect of Health Spending on Life Expectancy
 
 The plot below shows the relationship between Total Health Spending per person in US Dollars and Life Expectancy expressed in years.
 
@@ -130,7 +133,7 @@ ggplot(data = data,
 
 The graph above shows how the plots are mostly concentrated on the left side of the graph. This indicates that the majority of the data shows a lower amount of spending on health care. In addition, it can also be seen that with a lower amount of spending, less than 1000 USD, there is a small number of observations where the life expectancy reaches above 80 years old and majority of the observations fall into the range of 40 to 75 years old. On the other hand, as the spending increases, so does the amount of observations with a recorded life expectancy above 80 years old. An inference could be made stating that with a smaller amount of spending a country dedicates towards healthcare, the lower the expected life expectancy could be.
 
-## Data Visualization 2 - Average Health Spending vs Life Expectancy Over Time
+### Data Visualization 2 - Average Health Spending vs Life Expectancy Over Time
 
 The following plot analyzes the relationship between the Average Total Health Spending and Average Life Expectancy over time, highlighting how changes in healthcare investment correlate with improvements in longevity. By aggregating data across all countries, this visualization provides a clearer picture of global trends, reducing noise from individual country variations.
 
@@ -185,7 +188,7 @@ summary(life_exptcy_lm)
 
 With the equation y = 46.3 + 4.25x and with x being the independent variables and y representing the dependent variables, this equation can help predict the average life expectancy with the average spending amount. 46.3 in the equation represents the average health expectancy if the health spending were 0 USD. The 4.25 is the predicted change in average life expectancy for every USD increase in average spending. The R\^2 value shows that 63% of the variation in average life expectancy can be explained by the average health spending. The average was taken in order to condense the data.
 
-### Model Fit Test
+## Model Fit Test
 
 ```{r}
 
@@ -213,3 +216,59 @@ datatable(final_model, options = list(pageLength = 10, autoWidth = TRUE),
 Comparing four different models, the one that has the best fit will help find the most effective model. The four models that were compared were all simple linear models, but had slight differences such as mean spending, no log; mean spending, log; yearly spending, no log; and yearly spending, log. The table above shows the corresponding R\^2 values, it shows the simple linear, mean spending, log as the most representative model. This is because the R\^2 value is the highest out of all the models, meaning that 63% the variation of the average life expectancy can be explained by the average health spending. This R\^2 value is a high enough value to make predictions and inferences with that would be statistically significant. In addition, Model 2 also has the lowest value for variance in residuals, making it the model with the lowest amount that the model does not account for.
 
 Referring back to the first figure, the relationship between the two variables follows a curved line. By taking the log of the spending, helps make it more linear, giving a more accurate R\^2 value and a model with a better fit.
+
+## Generating 1000 Simulated Datasets
+```{r}
+rand_error <- function(x, mean = 0, sd) {
+  x + rnorm(length(x),
+            mean,
+            sd)
+}
+```
+
+```{r}
+pred <- predict(life_exptcy_lm)
+est_sigma <- sigma(life_exptcy_lm)
+```
+
+```{r}
+sims <- map_dfc(.x = 1:1000,
+                .f = ~ tibble(sim = rand_error(pred,
+                                               mean = 0,
+                                               sd = est_sigma)))
+# replace column names from sims...x to sims_x
+colnames(sims) <- colnames(sims) |> 
+  str_replace(pattern = "\\.\\.\\.",
+                  replace = "_")
+
+# add observed response to simulated dataset, dropping NA values if they exist
+sims <- summarized_country |>
+  filter(!is.na(mean_spending),
+         !is.na(mean_life_expectancy)) |>
+  select(mean_life_expectancy) |>
+  bind_cols(sims)
+```
+
+## Regressing Observed Dataset Against Simulated Datasets
+```{r}
+sims_r_squared <- sims |>
+  map(.f = ~ lm(mean_life_expectancy ~ .x,
+                data = sims)) |>
+  map(glance) |>
+  map_dbl(~ .x$r.squared)
+
+sims_r_squared <- sims_r_squared[names(sims_r_squared) != "mean_life_expectancy"]
+```
+
+## Plotting Distribution of R^2^
+```{r}
+tibble(sims = sims_r_squared) |>
+  ggplot(mapping = aes(x = sims)) +
+  geom_histogram(binwidth = 0.025) +
+  labs(title = expression("Distribution of *R<sup>2</sup>* Across Simulated Models"),
+       x = "Simulated *R<sup>2</sup>*",
+       y = "") +
+  theme(plot.title = element_markdown(),
+        axis.title.x = element_markdown())
+```
+
