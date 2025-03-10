@@ -219,75 +219,21 @@ Comparing four different models, the one that has the best fit will help find th
 
 Referring back to the first figure, the relationship between the two variables follows a curved line. By taking the log of the spending, helps make it more linear, giving a more accurate R\^2 value and a model with a better fit.
 
-## Generating 1000 Simulated Datasets
-```{r}
-rand_error <- function(x, mean = 0, sd) {
-  x + rnorm(length(x),
-            mean,
-            sd)
-}
-```
-
-```{r}
-pred <- predict(life_exptcy_lm)
-est_sigma <- sigma(life_exptcy_lm)
-```
-
-```{r}
-sims <- map_dfc(.x = 1:1000,
-                .f = ~ tibble(sim = rand_error(pred,
-                                               mean = 0,
-                                               sd = est_sigma)))
-# replace column names from sims...x to sims_x
-colnames(sims) <- colnames(sims) |> 
-  str_replace(pattern = "\\.\\.\\.",
-                  replace = "_")
-
-# add observed response to simulated dataset, dropping NA values if they exist
-sims <- summarized_country |>
-  filter(!is.na(mean_spending),
-         !is.na(mean_life_expectancy)) |>
-  select(mean_life_expectancy) |>
-  bind_cols(sims)
-```
-
-## Regressing Observed Dataset Against Simulated Datasets
-```{r}
-sims_r_squared <- sims |>
-  map(.f = ~ lm(mean_life_expectancy ~ .x,
-                data = sims)) |>
-  map(glance) |>
-  map_dbl(~ .x$r.squared)
-
-sims_r_squared <- sims_r_squared[names(sims_r_squared) != "mean_life_expectancy"]
-```
-
-## Plotting Distribution of R^2^
-```{r}
-tibble(sims = sims_r_squared) |>
-  ggplot(mapping = aes(x = sims)) +
-  geom_histogram(binwidth = 0.025) +
-  labs(title = expression("Distribution of *R<sup>2</sup>* Across Simulated Models"),
-       x = "Simulated *R<sup>2</sup>*",
-       y = "") +
-  theme(plot.title = element_markdown(),
-        axis.title.x = element_markdown())
-```
-
 # Simulation
 
 ## Creating a Simulated Dataset
 ```{r}
+# function to add the normal random error to our predictions
+rand_error <- function(x, mean = 0, sd){
+  error <- rnorm(length(x), mean = mean, sd = sd)
+  return(x + error)
+}
+```
+
+```{r}
 
 predicted_exp <- predict(life_exptcy_lm, newdata = summarized_country)
 est_sigma <- sigma(life_exptcy_lm)
-
-# function to add the normal random error to our predictions
-rand_error <- function(x, mean = 0, sd){
-  
-  error <- rnorm(length(x), mean = mean, sd = sd)
-  x + error
-}
 
 # simulating the data using the function with seed for reproducibility 
 set.seed(1234) 
@@ -297,7 +243,6 @@ sim_data <- summarized_country |>
   mutate(Simulated_Life_Expectancy = sim_response)
 
 # visualizing the simulated data set
-
 head(sim_data) |>
   kable(
     col.names = c("Country", "Mean Spending", "Mean Life Expectancy", "Simulated Life Expectancy"),
@@ -307,7 +252,7 @@ head(sim_data) |>
   column_spec(1, bold = TRUE)
 ```
 
-# Visualizing the Simulated Dataset
+### Visualizing the Simulated Dataset
 ```{r}
 # setting limits for the plot
 x_limits <- range(summarized_country$mean_spending, na.rm = TRUE)
@@ -348,3 +293,48 @@ obs_data_plot + sim_data_plot
 sources: https://manncz.github.io/stat331-calpoly-text/10-predictive-checks.html#ch10-checkins, https://www.statology.org/logarithmic-regression-in-r/, https://sqlpad.io/tutorial/set-ylim-xlim-graphs-examples/#:~:text=Q%3A%20How%20do%20I%20set,axis%20from%200%20to%2020, https://patchwork.data-imaginist.com/
 
 ADD OBSERVATIONS HERE
+
+## Generating 1000 Simulated Datasets
+```{r}
+set.seed(1234)
+
+sims <- map_dfc(.x = 1:1000,
+                .f = ~ tibble(sim = rand_error(predicted_exp,
+                                               mean = 0,
+                                               sd = est_sigma)))
+# replace column names from sims...x to sims_x
+colnames(sims) <- colnames(sims) |> 
+  str_replace(pattern = "\\.\\.\\.",
+                  replace = "_")
+
+# add observed response to simulated dataset, dropping NA values if they exist
+sims <- summarized_country |>
+  filter(!is.na(mean_spending),
+         !is.na(mean_life_expectancy)) |>
+  select(mean_life_expectancy) |>
+  bind_cols(sims)
+```
+
+### Regressing Observed Dataset Against Simulated Datasets
+```{r}
+sims_r_squared <- sims |>
+  map(.f = ~ lm(mean_life_expectancy ~ .x,
+                data = sims)) |>
+  map(glance) |>
+  map_dbl(~ .x$r.squared)
+
+sims_r_squared <- sims_r_squared[names(sims_r_squared) != "mean_life_expectancy"]
+```
+
+### Plotting Distribution of R^2^
+```{r}
+tibble(sims = sims_r_squared) |>
+  ggplot(mapping = aes(x = sims)) +
+  geom_histogram(binwidth = 0.025) +
+  labs(title = expression("Distribution of *R<sup>2</sup>* Across Simulated Models"),
+       x = "Simulated *R<sup>2</sup>*",
+       y = "") +
+  theme(plot.title = element_markdown(),
+        axis.title.x = element_markdown())
+```
+PLOT OBSERVATIONS HERE
