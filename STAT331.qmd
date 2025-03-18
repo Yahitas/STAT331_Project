@@ -294,6 +294,8 @@ sim_data_plot <- sim_data |>
 obs_data_plot + sim_data_plot
   
 ```
+*https://www.statology.org/logarithmic-regression-in-r/, https://sqlpad.io/tutorial/set-ylim-xlim-graphs-examples/#:\~:text=Q%3A%20How%20do%20I%20set,axis%20from%200%20to%2020, https://patchwork.data-imaginist.com/*
+
 
 The predictive check above was executed in order to analyze how well the model would produce data similar to the data that was observed. To the right is the observed data, or actual collected data, to the left is the simulated data. The simulation followed a similar pattern to the observed data. The simulation is done in order to mimic real-world scenarios, below we will run 1000 simulations to see how the created model would compare to observed data. The above table shows a small selection of countries with the observed life expectancy along with the predicted life expectancy predicted by the model. Comparing these values for the above countries can give an indication on how well the model predicts life expectancy. For some countries the prediction was fairly close to the observed mean while for other countries the model's prediction was 5 or more years off from the observed mean. 
 
@@ -356,6 +358,9 @@ Policy Implications: Our findings suggest that governments should prioritize inc
 
 Future Research: Given the limitations of our model, further studies could explore additional variables such as income inequality, diet, lifestyle factors, and environmental conditions to develop a more comprehensive understanding of what drives longevity. Exploring non-linear relationships and multi-level modeling approaches could also provide deeper insights into global health trends. Additionally, future research should adjust spending values for inflation and explore time-fixed effects to better account for economic variations over time.
 
+# References
 
-
-PUT CITATIONS IN A NICE FORMAT sources: https://manncz.github.io/stat331-calpoly-text/10-predictive-checks.html#ch10-checkins, https://www.statology.org/logarithmic-regression-in-r/, https://sqlpad.io/tutorial/set-ylim-xlim-graphs-examples/#:\~:text=Q%3A%20How%20do%20I%20set,axis%20from%200%20to%2020, https://patchwork.data-imaginist.com/
+PUT CITATIONS IN A NICE FORMAT sources:
+https://www.gapminder.org/data/ 
+https://pmc.ncbi.nlm.nih.gov/articles/PMC5739520/
+https://manncz.github.io/stat331-calpoly-text/10-predictive-checks.html#ch10-checkins, https://www.statology.org/logarithmic-regression-in-r/, https://sqlpad.io/tutorial/set-ylim-xlim-graphs-examples/#:\~:text=Q%3A%20How%20do%20I%20set,axis%20from%200%20to%2020, https://patchwork.data-imaginist.com/
