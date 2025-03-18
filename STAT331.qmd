@@ -295,7 +295,7 @@ obs_data_plot + sim_data_plot
   
 ```
 
-The predictive check above was executed in order to analyze how well the model would produce data similar to the data that was observed. To the right is the observed data, or actual collected data, to the left is the simulated data. The simulation followed a similar pattern to the observed data. The simulation is done in order to mimic real-world scenarios, below we will run 1000 simulations to see how the created model would compare to observed data. ADD MORE HERE
+The predictive check above was executed in order to analyze how well the model would produce data similar to the data that was observed. To the right is the observed data, or actual collected data, to the left is the simulated data. The simulation followed a similar pattern to the observed data. The simulation is done in order to mimic real-world scenarios, below we will run 1000 simulations to see how the created model would compare to observed data. The above table shows a small selection of countries with the observed life expectancy along with the predicted life expectancy predicted by the model. Comparing these values for the above countries can give an indication on how well the model predicts life expectancy. For some countries the prediction was fairly close to the observed mean while for other countries the model's prediction was 5 or more years off from the observed mean. 
 
 ## Generating 1000 Simulated Datasets
 
@@ -348,8 +348,6 @@ tibble(sims = sims_r_squared) |>
 
 The above graph shows a normal distribution, with most of the R\^2 values centering around 0.4, indicating that our model is somewhat helpful in assessing life expectancy based on health spending, but is not necessarily a 'good fit". If the model performed well, the R\^2 values would be mostly distributed around 1. The R\^2 value of 0.4 indicates that 40% of the variance in the dependent variable (life expectancy) is explained by the independent variable (health spending amount), suggesting a moderate but not strong relationship.
 
-PUT CITATIONS IN A NICE FORMAT sources: https://manncz.github.io/stat331-calpoly-text/10-predictive-checks.html#ch10-checkins, https://www.statology.org/logarithmic-regression-in-r/, https://sqlpad.io/tutorial/set-ylim-xlim-graphs-examples/#:\~:text=Q%3A%20How%20do%20I%20set,axis%20from%200%20to%2020, https://patchwork.data-imaginist.com/
-
 # Conclusion
 
 Our analysis finds a strong positive relationship between health spending and life expectancy, with 63% of the variation explained by health expenditure. The predictive checks confirm that while the model captures an important portion of the variance, other key factors—such as healthcare accessibility, quality, and broader economic conditions—also play a significant role in determining life expectancy.
@@ -357,3 +355,7 @@ Our analysis finds a strong positive relationship between health spending and li
 Policy Implications: Our findings suggest that governments should prioritize increasing healthcare investment as a means of improving public health outcomes. However, our analysis also highlights the importance of a holistic approach—spending alone is not enough. Policymakers should integrate healthcare investments with broader initiatives in education, sanitation, and preventive medicine to maximize the benefits of increased spending.
 
 Future Research: Given the limitations of our model, further studies could explore additional variables such as income inequality, diet, lifestyle factors, and environmental conditions to develop a more comprehensive understanding of what drives longevity. Exploring non-linear relationships and multi-level modeling approaches could also provide deeper insights into global health trends. Additionally, future research should adjust spending values for inflation and explore time-fixed effects to better account for economic variations over time.
+
+
+
+PUT CITATIONS IN A NICE FORMAT sources: https://manncz.github.io/stat331-calpoly-text/10-predictive-checks.html#ch10-checkins, https://www.statology.org/logarithmic-regression-in-r/, https://sqlpad.io/tutorial/set-ylim-xlim-graphs-examples/#:\~:text=Q%3A%20How%20do%20I%20set,axis%20from%200%20to%2020, https://patchwork.data-imaginist.com/
