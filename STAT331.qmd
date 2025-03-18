@@ -21,6 +21,8 @@ execute:
 
 The United States is infamous for its exceptionally high healthcare costs, but does this substantial spending translate to longer lifespans? By examining total healthcare expenditure per person (in US dollars) across 188 countries, we aim to uncover its impact on life expectancy.
 
+To address this research question, we will use a linear regression model to quantify the relationship between health spending and life expectancy. Additionally, we will visualize trends over time, explore model fit, and conduct predictive checks to assess the robustness of our model. Our analysis assumes that healthcare spending is a primary driver of life expectancy, though we acknowledge the potential influence of other socioeconomic factors, such as income inequality, education levels, and healthcare infrastructure.
+
 ## Importing Libraries
 
 ```{r}
@@ -61,11 +63,13 @@ This data ranges from a time period of 1800-2100 with the future years being for
 
 ## Hypothesis
 
-We hypothesize that higher spending on health will increase life expectancy. Past research conducted on similar topics have shown that increases in healthcare related social policies have increased life expectancy in the United States (Reynolds, 2019). Applying these same principles to the aforementioned variables, we believe that increased funding leads to increased life span. Source: https://pmc.ncbi.nlm.nih.gov/articles/PMC5739520/
+We hypothesize that higher spending on health will increase life expectancy. Past research conducted on similar topics have shown that increases in healthcare related social policies have increased life expectancy in the United States (Reynolds, 2019). Applying these same principles to the aforementioned variables, we believe that increased funding leads to increased life span.
+
+Source: https://pmc.ncbi.nlm.nih.gov/articles/PMC5739520/
 
 ## Cleaning the Data
 
-First, we focused on narrowing down the life expectancy dataset to the years that overlap with the total health spending per person data set (1995 to 2010). Similarly, our next focus was to narrow down the list of countries to those provided in the total health spending per person data set. Doing so revealed a list of 188 of countries across Europe, Africa, and the Americas. This dataset has 32 missing values all in the spending column of our data set, which we labeled as N/A. Luckily, both datasets were consistently formatted in dollars and years, so no adjustment was needed in this regard.
+First, we focused on narrowing down the life expectancy dataset to the years that overlap with the total health spending per person data set (1995 to 2010). Similarly, our next focus was to narrow down the list of countries to those provided in the total health spending per person data set. Doing so revealed a list of 188 of countries across Europe, Africa, and the Americas. This dataset has 32 missing values all in the spending column of our data set. Luckily, both datasets were consistently formatted in dollars and years, so no adjustment was needed in this regard.
 
 ```{r}
 life_exptcy <- life |> 
@@ -161,7 +165,7 @@ The above figure shows an overall positive relationship between the average amou
 
 The data we used to fit the linear model comes from averaging the health spending and life expectancy across all years for each country. This allows us to compare individual countries so we can look for any trends between countries while reducing complexity and volume of data points.
 
-This linear regression model models the relationship between life expectancy and the logarithm of health spending. The plot, pre-transformation of the explanatory variable, showed a logarithmic curve. To linearize the data, we had to perform a logarithmic transformation on the explanatory variable, average health spending.
+Initial scatterplots revealed a non-linear relationship between health spending and life expectancy, suggesting that spending increases produce diminishing returns. By applying a logarithmic transformation to health spending, we linearize the relationship, making it more suitable for regression analysis.
 
 ```{r}
 summarized_country <- data |>
@@ -188,7 +192,7 @@ life_exptcy_lm <- lm(mean_life_expectancy ~ log(mean_spending),
 summary(life_exptcy_lm)
 ```
 
-With the equation y = 46.3 + 4.25x and with x being the independent variables and y representing the dependent variables, this equation can help predict the average life expectancy with the average spending amount. 46.3 in the equation represents the average health expectancy if the health spending were 0 USD. The 4.25 is the predicted change in average life expectancy for every USD increase in average spending. The R\^2 value shows that 63% of the variation in average life expectancy can be explained by the average health spending. The average was taken in order to condense the data.
+With the equation y = 46.3 + 4.25x and with x being the independent variables and y representing the dependent variables, this equation can help predict the average life expectancy with the average spending amount. 46.3 in the equation represents the average health expectancy if the health spending were 0 USD. The 4.25 is the predicted change in average life expectancy for every USD increase in average spending. The R\^2 value shows that 63% of the variation in average life expectancy can be explained by the average health spending. The average was taken in order to condense the data. In essence, this model suggests that every 1% increase in health spending increases life expectancy by approximately 0.04 years. To clarify, the x-axis in our regression models represents log-transformed health spending, making interpretation of coefficients non-linear.
 
 ## Model Fit Test
 
@@ -220,6 +224,7 @@ Referring back to the first figure, the relationship between the two variables f
 # Simulation
 
 ## Creating a Simulated Dataset
+
 ```{r}
 # function to add the normal random error to our predictions
 rand_error <- function(x, mean = 0, sd){
@@ -251,6 +256,7 @@ head(sim_data) |>
 ```
 
 ### Visualizing the Simulated Dataset
+
 ```{r}
 # setting limits for the plot
 x_limits <- range(summarized_country$mean_spending, na.rm = TRUE)
@@ -292,6 +298,7 @@ obs_data_plot + sim_data_plot
 The predictive check above was executed in order to analyze how well the model would produce data similar to the data that was observed. To the right is the observed data, or actual collected data, to the left is the simulated data. The simulation followed a similar pattern to the observed data. The simulation is done in order to mimic real-world scenarios, below we will run 1000 simulations to see how the created model would compare to observed data. ADD MORE HERE
 
 ## Generating 1000 Simulated Datasets
+
 ```{r}
 set.seed(1234)
 
@@ -313,6 +320,9 @@ sims <- summarized_country |>
 ```
 
 ### Regressing Observed Dataset Against Simulated Datasets
+
+To assess model robustness, we generated 1,000 simulated datasets based on our regression model.
+
 ```{r}
 sims_r_squared <- sims |>
   map(.f = ~ lm(mean_life_expectancy ~ .x,
@@ -324,6 +334,7 @@ sims_r_squared <- sims_r_squared[names(sims_r_squared) != "mean_life_expectancy"
 ```
 
 ### Plotting Distribution of R^2^
+
 ```{r}
 tibble(sims = sims_r_squared) |>
   ggplot(mapping = aes(x = sims)) +
@@ -334,10 +345,15 @@ tibble(sims = sims_r_squared) |>
   theme(plot.title = element_markdown(),
         axis.title.x = element_markdown())
 ```
-The above graph shows a normal distribution, with most of the R^2 values centering around 0.4, indicating that our model is somewhat helpful in assessing life expectancy based on health spending, but is not necessarily a 'good fit". If the model performed well, the R^2 values would be mostly distributed around 1. The R^2 value of 0.4 indicates that 40% of the variance in the dependent variable (life expectancy) is explained by the independent variable (health spending amount), suggesting a moderate but not strong relationship. 
 
+The above graph shows a normal distribution, with most of the R\^2 values centering around 0.4, indicating that our model is somewhat helpful in assessing life expectancy based on health spending, but is not necessarily a 'good fit". If the model performed well, the R\^2 values would be mostly distributed around 1. The R\^2 value of 0.4 indicates that 40% of the variance in the dependent variable (life expectancy) is explained by the independent variable (health spending amount), suggesting a moderate but not strong relationship.
 
-PUT CITATIONS IN A NICE FORMAT 
-sources: https://manncz.github.io/stat331-calpoly-text/10-predictive-checks.html#ch10-checkins, https://www.statology.org/logarithmic-regression-in-r/, https://sqlpad.io/tutorial/set-ylim-xlim-graphs-examples/#:~:text=Q%3A%20How%20do%20I%20set,axis%20from%200%20to%2020, https://patchwork.data-imaginist.com/ 
+PUT CITATIONS IN A NICE FORMAT sources: https://manncz.github.io/stat331-calpoly-text/10-predictive-checks.html#ch10-checkins, https://www.statology.org/logarithmic-regression-in-r/, https://sqlpad.io/tutorial/set-ylim-xlim-graphs-examples/#:\~:text=Q%3A%20How%20do%20I%20set,axis%20from%200%20to%2020, https://patchwork.data-imaginist.com/
 
+# Conclusion
 
+Our analysis finds a strong positive relationship between health spending and life expectancy, with 63% of the variation explained by health expenditure. The predictive checks confirm that while the model captures an important portion of the variance, other key factors—such as healthcare accessibility, quality, and broader economic conditions—also play a significant role in determining life expectancy.
+
+Policy Implications: Our findings suggest that governments should prioritize increasing healthcare investment as a means of improving public health outcomes. However, our analysis also highlights the importance of a holistic approach—spending alone is not enough. Policymakers should integrate healthcare investments with broader initiatives in education, sanitation, and preventive medicine to maximize the benefits of increased spending.
+
+Future Research: Given the limitations of our model, further studies could explore additional variables such as income inequality, diet, lifestyle factors, and environmental conditions to develop a more comprehensive understanding of what drives longevity. Exploring non-linear relationships and multi-level modeling approaches could also provide deeper insights into global health trends. Additionally, future research should adjust spending values for inflation and explore time-fixed effects to better account for economic variations over time.
