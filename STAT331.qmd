@@ -63,13 +63,13 @@ This data ranges from a time period of 1800-2100 with the future years being for
 
 ## Hypothesis
 
-We hypothesize that higher spending on health will increase life expectancy. Past research conducted on similar topics have shown that increases in healthcare related social policies have increased life expectancy in the United States (Reynolds, 2019). Applying these same principles to the aforementioned variables, we believe that increased funding leads to increased life span.
+We hypothesize that higher spending on health will increase life expectancy. Past research conducted on similar topics have shown that increases in healthcare related social policies have increased life expectancy in the United States (Reynolds, 2019). Applying these same principles to the aforementioned variables, we believe that increased funding leads to increased life span. To test this hypothesis, we first ensure our data is clean and consistent before conducting analysis.
 
 Source: https://pmc.ncbi.nlm.nih.gov/articles/PMC5739520/
 
 ## Cleaning the Data
 
-First, we focused on narrowing down the life expectancy dataset to the years that overlap with the total health spending per person data set (1995 to 2010). Similarly, our next focus was to narrow down the list of countries to those provided in the total health spending per person data set. Doing so revealed a list of 188 of countries across Europe, Africa, and the Americas. This dataset has 32 missing values all in the spending column of our data set. Luckily, both datasets were consistently formatted in dollars and years, so no adjustment was needed in this regard.
+First, we focused on narrowing down the life expectancy dataset to the years that overlap with the total health spending per person data set (1995 to 2010). Similarly, our next focus was to narrow down the list of countries to those provided in the total health spending per person data set. Doing so revealed a list of 188 of countries across Europe, Africa, and the Americas. This dataset has 32 missing values, all in the spending column. These were labeled as 'N/A' to clearly indicate missing data. Since this represents a small percentage of the total dataset, we assume this will not significantly impact our analysis, though further imputation methods could be explored in future research. Luckily, both datasets were consistently formatted in dollars and years, so no adjustment was needed in this regard.
 
 ```{r}
 life_exptcy <- life |> 
@@ -141,7 +141,7 @@ The graph above shows how the plots are mostly concentrated on the left side of 
 
 ### Data Visualization 2 - Average Health Spending vs Life Expectancy Over Time
 
-The following plot analyzes the relationship between the Average Total Health Spending and Average Life Expectancy over time, highlighting how changes in healthcare investment correlate with improvements in longevity. By aggregating data across all countries, this visualization provides a clearer picture of global trends, reducing noise from individual country variations.
+The following plot analyzes the relationship between the Average Total Health Spending and Average Life Expectancy over time, highlighting how changes in healthcare investment correlate with improvements in longevity. By aggregating data across all countries, this visualization provides a clearer picture of global trends, reducing noise from individual country variations. This visualization helps assess whether increases in spending tend to precede improvements in life expectancy or if they occur simultaneously, strengthening our understanding of causality in this relationship.
 
 ```{r}
 summary_data <- data |>
@@ -192,7 +192,7 @@ life_exptcy_lm <- lm(mean_life_expectancy ~ log(mean_spending),
 summary(life_exptcy_lm)
 ```
 
-With the equation y = 46.3 + 4.25x and with x being the independent variables and y representing the dependent variables, this equation can help predict the average life expectancy with the average spending amount. 46.3 in the equation represents the average health expectancy if the health spending were 0 USD. The 4.25 is the predicted change in average life expectancy for every USD increase in average spending. The R\^2 value shows that 63% of the variation in average life expectancy can be explained by the average health spending. The average was taken in order to condense the data. In essence, this model suggests that every 1% increase in health spending increases life expectancy by approximately 0.04 years. To clarify, the x-axis in our regression models represents log-transformed health spending, making interpretation of coefficients non-linear.
+With the equation y = 46.3 + 4.25x and with x being the independent variables and y representing the dependent variables, this equation can help predict the average life expectancy with the average spending amount. 46.3 in the equation represents the average health expectancy if the health spending were 0 USD. The 4.25 is the predicted change in average life expectancy for every USD increase in average spending. The R\^2 value shows that 63% of the variation in average life expectancy can be explained by the average health spending. The average was taken in order to condense the data. Since the model uses a log transformation, the effect of an absolute increase in spending is not linear. Rather than a fixed increase per dollar, this coefficient suggests that each 1% increase in health spending corresponds to an increase of approximately 0.04 years in life expectancy.
 
 ## Model Fit Test
 
