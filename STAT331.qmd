@@ -198,10 +198,8 @@ models <- data |>
   janitor::clean_names()
 
 models <- list(
-  "Model 1 (Mean Spending, No Log)"= lm(mean_life_expectancy ~ mean_spending, data = summarized_country),
-  "Model 2 (Mean Spending, Log)"= lm(mean_life_expectancy ~ log(mean_spending), data = summarized_country),
-  "Model 3(Yearly Spending, No Log)"= lm(life_expectancy ~ spending, data = models),
-  "Model 4 (Yearly Spending, Log)"= lm(life_expectancy ~ log(spending), data = models))
+  "Model 1 (Mean Spending, Log)"= lm(mean_life_expectancy ~ log(mean_spending), data = summarized_country),
+  "Model 2 (Yearly Spending, Log)"= lm(life_expectancy ~ log(spending), data = models))
 
 final_model<- enframe(models, name = "Model", value = "Fit") |> 
   mutate("Variance in Response Values"= map_dbl(Fit, ~ var(model.frame(.x)[,1])),  
@@ -215,7 +213,7 @@ datatable(final_model, options = list(pageLength = 10, autoWidth = TRUE),
   formatRound(columns = c("Variance in Response Values", "Variance in Fitted Values", "Variance in Residuals", "R-Squared"), digits = 3)
 ```
 
-Comparing four different models, the one that has the best fit will help find the most effective model. The four models that were compared were all simple linear models, but had slight differences such as mean spending, no log; mean spending, log; yearly spending, no log; and yearly spending, log. The table above shows the corresponding R\^2 values, it shows the simple linear, mean spending, log as the most representative model. This is because the R\^2 value is the highest out of all the models, meaning that 63% the variation of the average life expectancy can be explained by the average health spending. This R\^2 value is a high enough value to make predictions and inferences with that would be statistically significant. In addition, Model 2 also has the lowest value for variance in residuals, making it the model with the lowest amount that the model does not account for.
+Comparing two different models, the one that has the best fit will help find the most effective model. The two models that were compared were both simple linear models, but had differences in their variables such as mean spending, log and yearly spending, log. The table above shows the corresponding R\^2 values, it shows the simple linear, mean spending, log as the most representative model. This is because the R\^2 value is the highest out of all the models, meaning that 63% the variation of the average life expectancy can be explained by the average health spending. This R\^2 value is a high enough value to make predictions and inferences with that would be statistically significant. In addition, Model 1 also has the lowest value for variance in residuals, making it the model with the lowest amount that the model does not account for.
 
 Referring back to the first figure, the relationship between the two variables follows a curved line. By taking the log of the spending, helps make it more linear, giving a more accurate R\^2 value and a model with a better fit.
 
@@ -290,9 +288,8 @@ sim_data_plot <- sim_data |>
 obs_data_plot + sim_data_plot
   
 ```
-sources: https://manncz.github.io/stat331-calpoly-text/10-predictive-checks.html#ch10-checkins, https://www.statology.org/logarithmic-regression-in-r/, https://sqlpad.io/tutorial/set-ylim-xlim-graphs-examples/#:~:text=Q%3A%20How%20do%20I%20set,axis%20from%200%20to%2020, https://patchwork.data-imaginist.com/
 
-ADD OBSERVATIONS HERE
+The predictive check above was executed in order to analyze how well the model would produce data similar to the data that was observed. To the right is the observed data, or actual collected data, to the left is the simulated data. The simulation followed a similar pattern to the observed data. The simulation is done in order to mimic real-world scenarios, below we will run 1000 simulations to see how the created model would compare to observed data. ADD MORE HERE
 
 ## Generating 1000 Simulated Datasets
 ```{r}
@@ -337,4 +334,10 @@ tibble(sims = sims_r_squared) |>
   theme(plot.title = element_markdown(),
         axis.title.x = element_markdown())
 ```
-PLOT OBSERVATIONS HERE
+The above graph shows a normal distribution, with most of the R^2 values centering around 0.4, indicating that our model is somewhat helpful in assessing life expectancy based on health spending, but is not necessarily a 'good fit". If the model performed well, the R^2 values would be mostly distributed around 1. The R^2 value of 0.4 indicates that 40% of the variance in the dependent variable (life expectancy) is explained by the independent variable (health spending amount), suggesting a moderate but not strong relationship. 
+
+
+PUT CITATIONS IN A NICE FORMAT 
+sources: https://manncz.github.io/stat331-calpoly-text/10-predictive-checks.html#ch10-checkins, https://www.statology.org/logarithmic-regression-in-r/, https://sqlpad.io/tutorial/set-ylim-xlim-graphs-examples/#:~:text=Q%3A%20How%20do%20I%20set,axis%20from%200%20to%2020, https://patchwork.data-imaginist.com/ 
+
+
